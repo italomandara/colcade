@@ -142,7 +142,7 @@ proto.layoutItems = function( items ) {
     fragment.appendChild( item );
 
     this.updateColumnHeight( index, item );
-  });
+  }, this);
 
   // append fragments to columns
   for ( var index in columnFragments ) {
