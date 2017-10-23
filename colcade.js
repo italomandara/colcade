@@ -128,17 +128,50 @@ proto._layout = function() {
 };
 
 proto.layoutItems = function( items ) {
-  items.forEach( this.layoutItem, this );
-};
 
-proto.layoutItem = function( item ) {
-  // layout item by appending to column
+  var columnFragments = {};
+
+  items.forEach( function( item ) {
+    var index = this.getColumnLayoutIndex();
+    // add item to fragment
+    var fragment = columnFragments[ index ];
+    if ( !fragment ) {
+      // create fragment if not already there
+      fragment = columnFragments[ index ] = document.createDocumentFragment();
+    }
+    fragment.appendChild( item );
+
+    this.updateColumnHeight( index, item );
+  });
+
+  // append fragments to columns
+  for ( var index in columnFragments ) {
+    var fragment = columnFragments[ index ];
+    this.appendColumnNode( index, fragment );
+  }
+}
+
+proto.getColumnLayoutIndex = function() {
   var minHeight = Math.min.apply( Math, this.columnHeights );
   var index = this.columnHeights.indexOf( minHeight );
-  this.activeColumns[ index ].appendChild( item );
+  return index;
+};
+
+proto.updateColumnHeight = function( index, item ) {
   // at least 1px, if item hasn't loaded
   // Not exactly accurate, but it's cool
   this.columnHeights[ index ] += item.offsetHeight || 1;
+};
+
+proto.appendColumnNode = function( index, node ) {
+  var column = this.activeColumns[ index ];
+  column.appendChild( node );
+};
+
+proto.layoutItem = function( item ) {
+  var index = this.getColumnLayoutIndex();
+  this.updateColumnHeight( index, item );
+  this.appendColumnNode( index, item );
 };
 
 // ----- adding items ----- //
